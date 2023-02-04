@@ -3,25 +3,41 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Course } from './entities/course.entity';
+import { CourseEntity } from './entities/course.entity';
+import { TagEntity } from './entities/tag.entity';
 
 @Injectable()
 export class CoursesService {
   constructor(
-    @InjectRepository(Course)
-    private readonly courseRepository: Repository<Course>,
+    @InjectRepository(CourseEntity)
+    private readonly courseRepository: Repository<CourseEntity>,
+
+    @InjectRepository(TagEntity)
+    private readonly tagRepository: Repository<TagEntity>,
   ) {}
 
-  async insert(createCourseDto: CreateCourseDto): Promise<Course> {
+  async insert(createCourseDto: CreateCourseDto): Promise<CourseEntity> {
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await this.courseRepository.insert(createCourseDto);
+        const tags = await Promise.all(
+          createCourseDto.tags.map(async (name) => this.preloadTagByName(name)),
+        );
+
+        const response = await this.courseRepository.insert({
+          ...createCourseDto,
+          tags,
+        });
+
         const { id } = response.generatedMaps[0];
-        const created: Course = new Course();
+
+        const created: CourseEntity = new CourseEntity();
         created.id = id;
         created.name = createCourseDto.name;
         created.description = createCourseDto.description;
-        created.tags = createCourseDto.tags;
+        created.tags = tags;
+
+        await this.courseRepository.save(created);
+
         resolve(created);
       } catch (error) {
         reject({
@@ -32,10 +48,12 @@ export class CoursesService {
     });
   }
 
-  async findAll(): Promise<Course[]> {
+  async findAll(): Promise<CourseEntity[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await this.courseRepository.find();
+        const response = await this.courseRepository.find({
+          relations: ['tags'],
+        });
         resolve(response);
       } catch (error) {
         reject({
@@ -46,13 +64,14 @@ export class CoursesService {
     });
   }
 
-  async findOne(id: number): Promise<Course> {
+  async findOne(id: number): Promise<CourseEntity> {
     return new Promise(async (resolve, reject) => {
       try {
         const response = await this.courseRepository.findOne({
           where: {
             id,
           },
+          relations: ['tags'],
         });
         if (!response) {
           reject({
@@ -70,20 +89,35 @@ export class CoursesService {
     });
   }
 
-  async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
+  async update(
+    id: number,
+    updateCourseDto: UpdateCourseDto,
+  ): Promise<CourseEntity> {
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await this.courseRepository.update(
+        const tags =
+          updateCourseDto.tags &&
+          (await Promise.all(
+            updateCourseDto.tags.map(async (name) =>
+              this.preloadTagByName(name),
+            ),
+          ));
+
+        const response = await this.courseRepository.preload({
           id,
-          updateCourseDto,
-        );
-        const { affected } = response;
-        if (affected === 0) {
+          ...updateCourseDto,
+          tags,
+        });
+
+        if (!response) {
           reject({
             code: 404,
             detail: 'Course not found',
           });
         }
+
+        await this.courseRepository.save(response);
+
         resolve(await this.findOne(id));
       } catch (error) {
         reject({
@@ -106,6 +140,30 @@ export class CoursesService {
           });
         }
         resolve(true);
+      } catch (error) {
+        reject({
+          code: error.code,
+          detail: error.detail,
+        });
+      }
+    });
+  }
+
+  private async preloadTagByName(name: string): Promise<TagEntity> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await this.tagRepository.findOne({
+          where: {
+            name,
+          },
+        });
+        if (!response) {
+          const tag = new TagEntity();
+          tag.name = name;
+          const created = await this.tagRepository.save(tag);
+          resolve(created);
+        }
+        resolve(response);
       } catch (error) {
         reject({
           code: error.code,

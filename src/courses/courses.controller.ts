@@ -13,14 +13,16 @@ import {
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Course } from './entities/course.entity';
+import { CourseEntity } from './entities/course.entity';
 
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
-  async insert(@Body() createCourseDto: CreateCourseDto): Promise<Course> {
+  async insert(
+    @Body() createCourseDto: CreateCourseDto,
+  ): Promise<CourseEntity> {
     try {
       return await this.coursesService.insert(createCourseDto);
     } catch (error) {
@@ -42,7 +44,7 @@ export class CoursesController {
   }
 
   @Get()
-  async findAll(): Promise<Course[]> {
+  async findAll(): Promise<CourseEntity[]> {
     try {
       return await this.coursesService.findAll();
     } catch (error) {
@@ -56,7 +58,7 @@ export class CoursesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Course> {
+  async findOne(@Param('id') id: string): Promise<CourseEntity> {
     try {
       return await this.coursesService.findOne(+id);
     } catch (error) {
@@ -73,7 +75,7 @@ export class CoursesController {
   async update(
     @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
-  ) {
+  ): Promise<CourseEntity> {
     try {
       return await this.coursesService.update(+id, updateCourseDto);
     } catch (error) {

@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { TagEntity } from './tag.entity';
 
 /*
     +-------------+--------------+----------------------------+
@@ -7,12 +14,12 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
     | id          | int(11)      | PRIMARY KEY AUTO_INCREMENT |
     | name        | varchar(100) |                            |
     | description | varchar(255) |                            |
-    | tags        | boolean      |                            |
+    | tags        | Tag[]        |                            |
     +-------------+--------------+----------------------------+
 */
 
 @Entity('courses')
-export class Course {
+export class CourseEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
@@ -32,10 +39,19 @@ export class Course {
   })
   description: string;
 
-  @Column({
-    name: 'tags',
-    type: 'json',
-    nullable: true,
+  @JoinTable({
+    name: 'course_tags',
+    joinColumn: {
+      name: 'course_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id',
+    },
   })
-  tags: string[];
+  @ManyToMany(() => TagEntity, (tag: TagEntity) => tag.courses, {
+    cascade: true,
+  })
+  tags: TagEntity[];
 }
