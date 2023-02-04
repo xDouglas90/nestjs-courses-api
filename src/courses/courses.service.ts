@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -9,10 +8,10 @@ import { TagEntity } from './entities/tag.entity';
 @Injectable()
 export class CoursesService {
   constructor(
-    @InjectRepository(CourseEntity)
+    @Inject('COURSE_REPOSITORY')
     private readonly courseRepository: Repository<CourseEntity>,
 
-    @InjectRepository(TagEntity)
+    @Inject('TAG_REPOSITORY')
     private readonly tagRepository: Repository<TagEntity>,
   ) {}
 
