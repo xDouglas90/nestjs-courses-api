@@ -13,6 +13,12 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+/postgres-data
 
 # Tests
 /coverage
