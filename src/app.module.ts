@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from 'dotenv';
+import { CoursesModule } from './courses/courses.module';
 
 config();
 
@@ -19,6 +20,7 @@ config();
       migrationsTableName: 'history',
       synchronize: true,
     }),
+    CoursesModule,
   ],
   controllers: [],
   providers: [],
