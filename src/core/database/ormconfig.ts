@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     __dirname + './migrations/*{.ts,.js}',
     'dist/core/database/migrations/*{.ts,.js}',
   ],
-  synchronize: false, //Essa propriedade não deve ser utilizada em produção! Caso contrário os dados poderão ser perdidos.
+  synchronize: false,
   migrationsRun: false,
   migrationsTableName: 'history',
 });
