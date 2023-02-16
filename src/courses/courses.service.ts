@@ -63,7 +63,7 @@ export class CoursesService {
     });
   }
 
-  async findOne(id: number): Promise<CourseEntity> {
+  async findOne(id: string): Promise<CourseEntity> {
     return new Promise(async (resolve, reject) => {
       try {
         const response = await this.courseRepository.findOne({
@@ -89,7 +89,7 @@ export class CoursesService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateCourseDto: UpdateCourseDto,
   ): Promise<CourseEntity> {
     return new Promise(async (resolve, reject) => {
@@ -127,7 +127,7 @@ export class CoursesService {
     });
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
         const response = await this.courseRepository.delete(id);

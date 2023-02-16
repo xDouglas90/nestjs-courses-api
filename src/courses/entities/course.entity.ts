@@ -1,27 +1,20 @@
 import {
+  BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { TagEntity } from './tag.entity';
-
-/*
-    +-------------+--------------+----------------------------+
-    |                          course                           |
-    +-------------+--------------+----------------------------+
-    | id          | int(11)      | PRIMARY KEY AUTO_INCREMENT |
-    | name        | varchar(100) |                            |
-    | description | varchar(255) |                            |
-    | tags        | Tag[]        |                            |
-    +-------------+--------------+----------------------------+
-*/
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('courses')
 export class CourseEntity {
-  @PrimaryGeneratedColumn({ name: 'id' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({
     name: 'name',
@@ -54,4 +47,21 @@ export class CourseEntity {
     cascade: true,
   })
   tags: TagEntity[];
+
+  @CreateDateColumn({
+    type: 'timestamp',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+  })
+  updatedAt: Date;
+
+  @BeforeInsert()
+  generatedId() {
+    if (this.id) return;
+
+    this.id = uuidv4();
+  }
 }
