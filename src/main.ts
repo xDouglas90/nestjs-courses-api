@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv-flow').config();
@@ -17,6 +18,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(process.env.APP_PORT || 3000);
 }
